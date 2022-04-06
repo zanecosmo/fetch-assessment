@@ -28,8 +28,8 @@ class ItemAdapter(private val dataSet: List<Items>) :
         val givenName: String? = dataSet[position].name
         val givenId: Int = dataSet[position].listId
 
-        val nameString = "Name: %s"
-        val idString = "List: %d"
+        val nameString = "NAME:   %s"
+        val idString = "LIST:   %d"
 
         holder.name.text = nameString.format(givenName)
         holder.listId.text = idString.format(givenId)
