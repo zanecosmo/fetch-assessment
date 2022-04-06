@@ -11,6 +11,9 @@ import java.lang.Exception
 
 class MainActivity : AppCompatActivity() {
 
+    private lateinit var adapter : RecyclerView.Adapter<ItemAdapter.ViewHolder>
+    private lateinit var recyclerView: RecyclerView
+
     private fun customFilter(itemList: ArrayList<Items>): ArrayList<Items> {
         val newItemList = ArrayList<Items>()
         for (item in itemList) {
@@ -20,20 +23,20 @@ class MainActivity : AppCompatActivity() {
         return newItemList
     }
 
-    private fun recyclerViewInit(dataSet: List<Items>) : RecyclerView {
-        val recyclerView: RecyclerView = findViewById(R.id.rv_item_list)
-        val adapter = ItemAdapter(dataSet, this)
-        recyclerView.adapter = adapter
+    private fun recyclerViewInit(dataSet: List<Items>) {
+        println("RECYCLER VIEW INIT CALLED ---------------------------------")
+        recyclerView = findViewById(R.id.rv_item_list)
+        adapter = ItemAdapter(dataSet)
         recyclerView.layoutManager = LinearLayoutManager(this)
-        return recyclerView
+        recyclerView.adapter = adapter
     }
 
-    private fun httpRequest(): List<Items> {
+    private fun httpRequest() {
         val url = "https://fetch-hiring.s3.amazonaws.com/hiring.json"
-        var sortedByListId: List<Items> = listOf()
 
         try {
-            url.httpGet().responseString { _, _, result ->
+            val req = url.httpGet().responseString { _, _, result ->
+
                 val itemList: ArrayList<Items> = arrayListOf()
                 val jsonArray = JSONTokener(result.get()).nextValue() as JSONArray
 
@@ -49,20 +52,23 @@ class MainActivity : AppCompatActivity() {
                     itemList.add(newItem)
                 }
 
-                sortedByListId = customFilter(itemList).sortedWith(compareBy({ it.listId }, { it.id }))
+                val sortedByListId = customFilter(itemList).sortedWith(compareBy({ it.listId }, { it.id }))
 
                 recyclerViewInit(sortedByListId)
             }
-        } catch (e: Exception) {println(e)}
 
-        return sortedByListId
+            req.join()
+
+        } catch (e: Exception) {println(e)}
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        var dataSet : List<Items> = httpRequest()
-        val recyclerView = recyclerViewInit(dataSet)
+        println("ONCREATE CALLED---------------------------------")
+
+        httpRequest()
     }
 }
+
